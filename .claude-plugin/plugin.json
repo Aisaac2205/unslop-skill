@@ -1,0 +1,8 @@
+{
+  "name": "unslop-skill",
+  "description": "Bilingual EN/ES editorial rewrite skill: removes AI-writing patterns and enforces documented grammar, UX writing, SEO, and formal-document rules.",
+  "version": "2.0.0",
+  "author": {
+    "name": "Isaac Sarceño"
+  }
+}

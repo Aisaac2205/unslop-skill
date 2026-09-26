@@ -1,0 +1,13 @@
+{
+  "name": "unslop-skill",
+  "owner": {
+    "name": "Isaac Sarceño"
+  },
+  "plugins": [
+    {
+      "name": "unslop-skill",
+      "source": "./",
+      "description": "Bilingual EN/ES editorial rewrite skill: removes AI-writing patterns and enforces documented grammar, UX writing, SEO, and formal-document rules."
+    }
+  ]
+}
