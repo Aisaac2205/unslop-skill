@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  build-smoke-test:
+    name: Build smoke test
+    if: >-
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build distribution artifacts
+        run: bash scripts/build-dist.sh
+
+  release:
+    name: Build and publish release
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build distribution artifacts
+        run: bash scripts/build-dist.sh
+
+      - name: Extract changelog section for this version
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          NOTES_FILE="${RUNNER_TEMP}/release-notes.md"
+          awk -v ver="${VERSION}" '
+            $0 ~ "^## \\[" ver "\\]" { found = 1; print; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > "${NOTES_FILE}"
+          echo "NOTES_FILE=${NOTES_FILE}" >> "${GITHUB_ENV}"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            dist/*.zip dist/chatgpt/*.md \
+            --title "${GITHUB_REF_NAME}" \
+            --notes-file "${NOTES_FILE}" \
+            --generate-notes
